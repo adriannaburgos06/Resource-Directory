@@ -177,7 +177,7 @@ else:
 
             st.markdown("#### Type(s) of Service")
             for s in resource["Services"]:
-                st.markdown(f"• {s}")
+                st.markdown(f"{s}")
 
             if resource["Locations"]:
                 st.markdown("#### Location(s)")
