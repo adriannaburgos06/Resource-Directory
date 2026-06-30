@@ -100,7 +100,29 @@ hr {
 .header-logo img {
     width: 280px;
 }
+/* FIX: text inside select/search dropdown */
+[data-testid="stSidebar"] input {
+    color: #0B2E59 !important;
+    background: white !important;
+}
 
+/* FIX: selected value inside selectbox */
+.stSelectbox div[data-baseweb="select"] * {
+    color: #0B2E59 !important;
+}
+
+/* FIX: placeholder + typed text */
+.stSelectbox input {
+    color: #0B2E59 !important;
+    -webkit-text-fill-color: #0B2E59 !important;
+}
+
+/* FIX: dropdown search field */
+div[data-baseweb="popover"] input {
+    color: #0B2E59 !important;
+    -webkit-text-fill-color: #0B2E59 !important;
+    background: white !important;
+}
 </style>
 """, unsafe_allow_html=True)
 
