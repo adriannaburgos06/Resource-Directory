@@ -186,9 +186,6 @@ else:
             else:
                 st.success("Virtual / Flexible (Available across all counties)")
 
-            if resource["Counties"]:
-                st.caption("Counties: " + ", ".join(resource["Counties"]))
-
             phones = [p for p in resource["Phones"] if p.strip()]
             if phones:
                 st.markdown("#### Phone")
