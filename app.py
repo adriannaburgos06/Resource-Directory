@@ -175,12 +175,22 @@ else:
             for s in resource["Services"]:
                 st.markdown(f"• {s}")
 
-            if resource["Locations"]:
-                st.markdown("#### Location(s)")
-                for loc in resource["Locations"]:
-                    st.markdown(f"{loc}")
-            else:
-                st.success("Virtual / Flexible (Available across all counties)")
+            locations = set()
+
+            for _, r in group.iterrows():
+                loc = ", ".join([
+                r["Address"],
+                r["City"],
+                r["State"],
+                r["Zip Code"]
+                ]).strip(", ")
+
+                if loc:
+                    locations.add(loc)
+
+                    locations = sorted(locations)
+                else:
+                    st.success("Virtual / Flexible (Available across all counties)")
 
             phones = [p for p in resource["Phones"] if p.strip()]
             if phones:
