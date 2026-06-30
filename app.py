@@ -2,27 +2,21 @@ import streamlit as st
 import pandas as pd
 import base64
 
-# -------------------------------
-# PAGE CONFIG
-# -------------------------------
 st.set_page_config(
     page_title="Resource Directory",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
-# -------------------------------
-# CUSTOM CSS (CLEANED)
-# -------------------------------
 st.markdown("""
 <style>
 
-/* App background follows theme */
+/* App */
 .stApp {
     background: transparent;
 }
 
-/* Sidebar styling */
+/* Sidebar */
 [data-testid="stSidebar"] {
     background: #0B2E59;
     padding-top: 20px;
@@ -39,7 +33,7 @@ st.markdown("""
 
 /* Resource cards */
 [data-testid="stVerticalBlockBorderWrapper"] {
-    background: #FFFBE6 !important;
+    background: #FFF7CC !important;
     border: 1px solid #E6D58C !important;
     border-radius: 12px !important;
     padding: 18px !important;
@@ -47,7 +41,7 @@ st.markdown("""
     box-shadow: 0 2px 8px rgba(0,0,0,0.08);
 }
 
-/* Selectbox styling */
+/* Selectboxes */
 .stSelectbox div[data-baseweb="select"] > div {
     background: white !important;
     color: #0B2E59 !important;
@@ -69,7 +63,7 @@ div[data-baseweb="menu"] div[role="option"]:hover {
     background: #FFF8D6 !important;
 }
 
-/* Sidebar toggle always visible */
+/* Sidebar toggle */
 [data-testid="stSidebarCollapsedControl"] {
     display: block !important;
     background: white !important;
@@ -81,7 +75,7 @@ div[data-baseweb="menu"] div[role="option"]:hover {
     fill: #0B2E59 !important;
 }
 
-/* Hide only what is safe */
+/* Hide Streamlit extras */
 #MainMenu, footer {
     visibility: hidden;
 }
@@ -100,66 +94,16 @@ hr {
 .header-logo img {
     width: 280px;
 }
-/* FIX: text inside select/search dropdown */
-[data-testid="stSidebar"] input {
-    color: #0B2E59 !important;
-    background: white !important;
-}
 
-/* FIX: selected value inside selectbox */
-.stSelectbox div[data-baseweb="select"] * {
-    color: #0B2E59 !important;
-}
-
-/* FIX: placeholder + typed text */
-.stSelectbox input {
-    color: #0B2E59 !important;
-    -webkit-text-fill-color: #0B2E59 !important;
-}
-
-/* FIX: dropdown search field */
-div[data-baseweb="popover"] input {
-    color: #0B2E59 !important;
-    -webkit-text-fill-color: #0B2E59 !important;
-    background: white !important;
-}
-div[data-testid="stVerticalBlock"] > div:has(div[data-testid="stVerticalBlockBorderWrapper"]) {
-    background: #FFF7CC !important;
-    border: 1px solid #E6D58C !important;
-    border-radius: 12px !important;
-    padding: 18px !important;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.08);
-}
 </style>
 """, unsafe_allow_html=True)
 
-# -------------------------------
-# LOAD DATA
-# -------------------------------
 df = pd.read_csv("resources.csv")
 df.columns = df.columns.str.strip()
 df = df.fillna("")
+df = df.astype(str).apply(lambda x: x.str.strip().replace("nan", ""))
 
-def clean(x):
-    if pd.isna(x):
-        return ""
-    return str(x).strip()
-
-# Clean columns
-cols = [
-    "Name", "Type of Service", "County", "Address",
-    "City", "State", "Zip Code", "Phone", "Email"
-]
-
-for c in cols:
-    if c in df.columns:
-        df[c] = df[c].astype(str).str.strip().replace("nan", "")
-
-# -------------------------------
-# LOGO
-# -------------------------------
-with open("logo.png", "rb") as f:
-    logo = base64.b64encode(f.read()).decode()
+logo = base64.b64encode(open("logo.png", "rb").read()).decode()
 
 st.markdown(f"""
 <div class="header-logo">
@@ -172,13 +116,10 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-# -------------------------------
-# SIDEBAR FILTERS
-# -------------------------------
 st.sidebar.title("Filters")
 
-service_options = sorted([x for x in df["Type of Service"].unique() if x])
-county_options = sorted([x for x in df["County"].unique() if x])
+service_options = sorted(df["Type of Service"].unique())
+county_options = sorted(df["County"].unique())
 
 selected_service = st.sidebar.selectbox(
     "Type of Service",
@@ -190,9 +131,6 @@ selected_county = st.sidebar.selectbox(
     ["All"] + county_options
 )
 
-# -------------------------------
-# FILTER DATA
-# -------------------------------
 filtered = df.copy()
 
 if selected_service != "All":
@@ -203,13 +141,11 @@ if selected_county != "All":
 
 st.markdown(f"### Showing {len(filtered)} resource(s)")
 
-# -------------------------------
-# DISPLAY RESULTS
-# -------------------------------
 if filtered.empty:
     st.warning("No matching resources found.")
 
 else:
+
     grouped = []
 
     for name, group in filtered.groupby("Name", sort=True):
@@ -221,11 +157,9 @@ else:
             "Phones": sorted(set(group["Phone"])),
             "Emails": sorted(set(group["Email"])),
             "Locations": [
-                ", ".join(
-                    [clean(r["Address"]), clean(r["City"]), clean(r["State"]), clean(r["Zip Code"])]
-                )
+                ", ".join([r["Address"], r["City"], r["State"], r["Zip Code"]]).strip(", ")
                 for _, r in group.iterrows()
-                if any([r["Address"], r["City"], r["State"], r["Zip Code"]])
+                if any(r[col] for col in ["Address","City","State","Zip Code"])
             ]
         })
 
@@ -242,7 +176,7 @@ else:
             if resource["Locations"]:
                 st.markdown("#### Locations")
                 for loc in resource["Locations"]:
-                    st.markdown(f"📍 {loc}")
+                    st.markdown(f"{loc}")
             else:
                 st.success("Virtual / Flexible (Available across all counties)")
 
