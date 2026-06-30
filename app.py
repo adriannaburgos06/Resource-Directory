@@ -22,7 +22,9 @@ st.markdown("""
     padding-top: 20px;
 }
 
-[data-testid="stSidebar"] * {
+[data-testid="stSidebar"] p,
+[data-testid="stSidebar"] label,
+[data-testid="stSidebar"] span {
     color: white !important;
 }
 
