@@ -123,6 +123,13 @@ div[data-baseweb="popover"] input {
     -webkit-text-fill-color: #0B2E59 !important;
     background: white !important;
 }
+div[data-testid="stVerticalBlock"] > div:has(div[data-testid="stVerticalBlockBorderWrapper"]) {
+    background: #FFF7CC !important;
+    border: 1px solid #E6D58C !important;
+    border-radius: 12px !important;
+    padding: 18px !important;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+}
 </style>
 """, unsafe_allow_html=True)
 
