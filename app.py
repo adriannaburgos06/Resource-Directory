@@ -175,12 +175,12 @@ else:
 
             st.subheader(resource["Name"])
 
-            st.markdown("#### Type(s) of Service")
+            st.markdown("#### Type of Service")
             for s in resource["Services"]:
                 st.markdown(f"{s}")
 
             if resource["Locations"]:
-                st.markdown("#### Location(s)")
+                st.markdown("#### Location")
                 for loc in resource["Locations"]:
                     st.markdown(f"{loc}")
             else:
