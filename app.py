@@ -109,7 +109,7 @@ st.markdown(
 st.sidebar.title("Filters")
 
 service_options = sorted(df["Type of Service"].unique())
-county_options = sorted(df["County"].unique())
+county_options = sorted([c for c in df["County"].unique() if c.strip() != ""])
 
 selected_service = st.sidebar.selectbox(
     "Type of Service",
