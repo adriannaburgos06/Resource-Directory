@@ -1,46 +1,196 @@
 import streamlit as st
 import pandas as pd
+import base64
 
-# -------------------------------------------------
-# PAGE SETUP
-# -------------------------------------------------
-st.set_page_config(page_title="Resource Directory", layout="wide")
+st.set_page_config(
+    page_title="Resource Directory",
+    layout="wide"
+)
 
+st.markdown("""
+<style>
+.stApp{
+    background:#FFFFFF;
+    color:#0B2E59;
+}
+[data-testid="stSidebar"]{
+    background:#0B2E59;
+    padding-top:20px;
+}
 
-st.title("Resource Directory")
+[data-testid="stSidebar"] *{
+    color:white !important;
+}
 
-# -------------------------------------------------
-# LOAD + CLEAN DATA
-# -------------------------------------------------
+[data-testid="stSidebar"] label{
+    color:white !important;
+    font-weight:600;
+}
+
+h1,h2,h3,h4,h5,h6{
+    color:#0B2E59 !important;
+}
+
+.stSelectbox div[data-baseweb="select"] > div{
+    background:white !important;
+    color:#0B2E59 !important;
+    border:2px solid #0B2E59 !important;
+    border-radius:0px !important;
+}
+
+.stSelectbox span{
+    color:#0B2E59 !important;
+}
+
+.stSelectbox input{
+    color:#0B2E59 !important;
+    background:white !important;
+}
+
+.stSelectbox svg{
+    fill:#0B2E59 !important;
+}
+
+/* Dropdown */
+
+div[data-baseweb="popover"]{
+    background:white !important;
+}
+
+div[data-baseweb="menu"]{
+    background:white !important;
+    border:2px solid #0B2E59 !important;
+}
+
+div[data-baseweb="menu"] div[role="option"]{
+    background:white !important;
+    color:#0B2E59 !important;
+}
+
+div[data-baseweb="menu"] div[role="option"]:hover{
+    background:#FFF8D6 !important;
+}
+
+div[data-baseweb="menu"] div[data-highlighted="true"]{
+    background:#FFF8D6 !important;
+    color:#0B2E59 !important;
+}
+
+div[data-baseweb="menu"] div[aria-selected="true"]{
+    background:#FFF2B3 !important;
+    color:#0B2E59 !important;
+}
+
+[data-testid="stVerticalBlockBorderWrapper"]{
+    background:#FFF8D6 !important;
+    border:2px solid #E6D58C !important;
+    border-radius:0px !important;
+    padding:18px !important;
+    margin-bottom:18px;
+}
+
+/* ===========================
+   DIVIDER
+=========================== */
+
+hr{
+    border-color:#D8C870 !important;
+}
+
+/* ===========================
+   LOGO
+=========================== */
+
+.header-logo{
+    display:flex;
+    justify-content:center;
+    margin-bottom:20px;
+}
+
+.header-logo img{
+    width:280px;
+}
+
+/* ===========================
+   HIDE STREAMLIT MENU
+=========================== */
+
+#MainMenu{
+    visibility:hidden;
+}
+
+footer{
+    visibility:hidden;
+}
+
+header{
+    visibility:hidden;
+}
+/* Make the sidebar toggle visible */
+[data-testid="stSidebarCollapsedControl"] {
+    background-color: white !important;
+    border: 2px solid #0B2E59 !important;
+    border-radius: 6px;
+}
+
+[data-testid="stSidebarCollapsedControl"] svg {
+    fill: #0B2E59 !important;
+    stroke: #0B2E59 !important;
+}
+</style>
+
+""", unsafe_allow_html=True)
+
 df = pd.read_csv("resources.csv")
 
-# clean column names
 df.columns = df.columns.str.strip()
 
-# fill missing values first
 df = df.fillna("")
 
-# clean important text columns
-for col in ["County", "Type of Service", "Name", "City", "State", "Zip Code"]:
+for col in [
+    "Name",
+    "Type of Service",
+    "County",
+    "Address",
+    "City",
+    "State",
+    "Zip Code",
+    "Phone",
+    "Email"
+]:
     if col in df.columns:
-        df[col] = df[col].astype(str).str.strip()
-        df[col] = df[col].replace("nan", "")
+        df[col] = (
+            df[col]
+            .astype(str)
+            .str.strip()
+            .replace("nan","")
+        )
 
-# -------------------------------------------------
-# CLEAN FUNCTION
-# -------------------------------------------------
-def clean(val):
-    if pd.isna(val):
+
+def clean(value):
+    if pd.isna(value):
         return ""
-    return str(val).strip()
+    return str(value).strip()
 
-# -------------------------------------------------
-# SIDEBAR FILTERS
-# -------------------------------------------------
-st.sidebar.header("Filters")
+with open("logo.png","rb") as f:
+    logo = base64.b64encode(f.read()).decode()
 
-service_options = sorted(df["Type of Service"].unique())
-county_options = sorted(df["County"].unique())
+st.markdown(f"""
+<div class="header-logo">
+    <img src="data:image/png;base64,{logo}">
+</div>
+""", unsafe_allow_html=True)
+
+
+st.sidebar.title("Filters")
+
+service_options = sorted(
+    [x for x in df["Type of Service"].unique() if x]
+)
+
+county_options = sorted(
+    [x for x in df["County"].unique() if x]
+)
 
 selected_service = st.sidebar.selectbox(
     "Type of Service",
@@ -52,77 +202,128 @@ selected_county = st.sidebar.selectbox(
     ["All"] + county_options
 )
 
-# -------------------------------------------------
-# FILTER DATA
-# -------------------------------------------------
 filtered = df.copy()
 
 if selected_service != "All":
-    filtered = filtered[filtered["Type of Service"] == selected_service]
+    filtered = filtered[
+        filtered["Type of Service"] == selected_service
+    ]
 
 if selected_county != "All":
-    filtered = filtered[filtered["County"] == selected_county]
+    filtered = filtered[
+        filtered["County"] == selected_county
+    ]
 
-# -------------------------------------------------
-# RESULTS
-# -------------------------------------------------
-st.write(f"Showing {len(filtered)} resources")
+st.markdown(f"### Showing {len(filtered)} resource(s)")
 
 if filtered.empty:
     st.warning("No matching resources found.")
 
 else:
-    for _, row in filtered.iterrows():
 
-        # Clean fields
-        name = clean(row.get("Name"))
-        service = clean(row.get("Type of Service"))
-        address = clean(row.get("Address"))
-        city = clean(row.get("City"))
-        state = clean(row.get("State"))
-        zip_code = clean(row.get("Zip Code"))
-        county = clean(row.get("County"))
-        phone = clean(row.get("Phone"))
-        email = clean(row.get("Email"))
+    grouped = []
 
-        # Detect virtual/flexible
-        is_virtual = all([
-            address == "",
-            city == "",
-            state == "",
-            zip_code == "",
-            county == ""
-        ])
+    for name, group in filtered.groupby("Name", sort=True):
 
-        # -------------------------------------------------
-        # CARD
-        # -------------------------------------------------
+        services = sorted(
+            set(
+                x for x in group["Type of Service"]
+                if x
+            )
+        )
+
+        counties = sorted(
+            set(
+                x for x in group["County"]
+                if x
+            )
+        )
+
+        phones = sorted(
+            set(
+                x for x in group["Phone"]
+                if x
+            )
+        )
+
+        emails = sorted(
+            set(
+                x for x in group["Email"]
+                if x
+            )
+        )
+
+        locations = []
+
+        for _, r in group.iterrows():
+
+            pieces = [
+                clean(r["Address"]),
+                clean(r["City"]),
+                clean(r["State"]),
+                clean(r["Zip Code"])
+            ]
+
+            location = ", ".join(
+                [x for x in pieces if x]
+            )
+
+            if location and location not in locations:
+                locations.append(location)
+
+        grouped.append({
+            "Name": name,
+            "Services": services,
+            "Counties": counties,
+            "Locations": locations,
+            "Phones": phones,
+            "Emails": emails
+        })
+        
+
+    for resource in grouped:
+
         with st.container(border=True):
 
-            # Name
-            st.subheader(name)
+            st.subheader(resource["Name"])
 
-            # Service
-            st.markdown(f"**Type of Service:** {service}")
+            st.markdown("#### Type(s) of Service")
 
-            # Location logic
-            if is_virtual:
-                st.success("Virtual / Flexible (Available across all counties)")
+            for service in resource["Services"]:
+                st.markdown(f"• {service}")
+
+            if resource["Locations"]:
+
+                st.markdown("#### Locations")
+
+                for location in resource["Locations"]:
+                    st.markdown(f"📍 {location}")
+
             else:
-                address_parts = [address, city, state, zip_code]
-                full_address = ", ".join([x for x in address_parts if x])
+                st.success(
+                    "Virtual / Flexible (Available across all counties)"
+                )
 
-                if full_address:
-                    st.markdown(f"{full_address}")
 
-                if county:
-                    st.caption(f"County: {county}")
+            if resource["Counties"]:
 
-            # Contact
-            if phone:
-                st.markdown(f"{phone}")
+                st.caption(
+                    "Counties: " +
+                    ", ".join(resource["Counties"])
+                )
 
-            if email:
-                st.markdown(f"{email}")
+            if resource["Phones"]:
+
+                st.markdown("#### Phone")
+
+                for phone in resource["Phones"]:
+                    st.markdown(phone)
+
+            if resource["Emails"]:
+
+                st.markdown("#### Email")
+
+                for email in resource["Emails"]:
+                    st.markdown(email)
 
             st.divider()
