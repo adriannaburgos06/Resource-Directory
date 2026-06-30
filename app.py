@@ -147,7 +147,16 @@ else:
 
         locations = set()
 
-        for _, r in group.iterrows():
+        full_group = df[df["Name"] == name]
+
+        services = sorted(set(full_group["Type of Service"]))
+        counties = sorted(set(full_group["County"]))
+        phones = sorted(set(full_group["Phone"]))
+        emails = sorted(set(full_group["Email"]))
+
+        locations = set()
+
+        for _, r in full_group.iterrows():
             loc = ", ".join([
                 r["Address"],
                 r["City"],
