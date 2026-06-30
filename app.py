@@ -11,12 +11,10 @@ st.set_page_config(
 st.markdown("""
 <style>
 
-/* App */
 .stApp {
     background: transparent;
 }
 
-/* Sidebar */
 [data-testid="stSidebar"] {
     background: #0B2E59;
     padding-top: 20px;
@@ -26,14 +24,9 @@ st.markdown("""
 [data-testid="stSidebar"] label,
 [data-testid="stSidebar"] span {
     color: white !important;
-}
-
-[data-testid="stSidebar"] label {
-    color: white !important;
     font-weight: 600;
 }
 
-/* Resource cards */
 [data-testid="stVerticalBlockBorderWrapper"] {
     background: #FFF7CC !important;
     border: 1px solid #E6D58C !important;
@@ -43,7 +36,6 @@ st.markdown("""
     box-shadow: 0 2px 8px rgba(0,0,0,0.08);
 }
 
-/* Selectboxes */
 .stSelectbox div[data-baseweb="select"] > div {
     background: white !important;
     color: #0B2E59 !important;
@@ -51,7 +43,6 @@ st.markdown("""
     border-radius: 6px !important;
 }
 
-/* Dropdown */
 div[data-baseweb="menu"] {
     background: white !important;
     border: 2px solid #0B2E59 !important;
@@ -65,7 +56,6 @@ div[data-baseweb="menu"] div[role="option"]:hover {
     background: #FFF8D6 !important;
 }
 
-/* Sidebar toggle */
 [data-testid="stSidebarCollapsedControl"] {
     display: block !important;
     background: white !important;
@@ -77,7 +67,6 @@ div[data-baseweb="menu"] div[role="option"]:hover {
     fill: #0B2E59 !important;
 }
 
-/* Hide Streamlit extras */
 #MainMenu, footer {
     visibility: hidden;
 }
@@ -86,7 +75,6 @@ hr {
     border-color: #D8C870 !important;
 }
 
-/* Logo */
 .header-logo {
     display: flex;
     justify-content: center;
@@ -152,17 +140,33 @@ else:
 
     for name, group in filtered.groupby("Name", sort=True):
 
+        services = sorted(set(group["Type of Service"]))
+        counties = sorted(set(group["County"]))
+        phones = sorted(set(group["Phone"]))
+        emails = sorted(set(group["Email"]))
+
+        locations = set()
+
+        for _, r in group.iterrows():
+            loc = ", ".join([
+                r["Address"],
+                r["City"],
+                r["State"],
+                r["Zip Code"]
+            ]).strip(", ")
+
+            if loc:
+                locations.add(loc)
+
+        locations = sorted(locations)
+
         grouped.append({
             "Name": name,
-            "Services": sorted(set(group["Type of Service"])),
-            "Counties": sorted(set(group["County"])),
-            "Phones": sorted(set(group["Phone"])),
-            "Emails": sorted(set(group["Email"])),
-            "Locations": [
-                ", ".join([r["Address"], r["City"], r["State"], r["Zip Code"]]).strip(", ")
-                for _, r in group.iterrows()
-                if any(r[col] for col in ["Address","City","State","Zip Code"])
-            ]
+            "Services": services,
+            "Counties": counties,
+            "Phones": phones,
+            "Emails": emails,
+            "Locations": locations
         })
 
     for resource in grouped:
@@ -175,22 +179,15 @@ else:
             for s in resource["Services"]:
                 st.markdown(f"• {s}")
 
-            locations = set()
+            if resource["Locations"]:
+                st.markdown("#### Location(s)")
+                for loc in resource["Locations"]:
+                    st.markdown(f"📍 {loc}")
+            else:
+                st.success("Virtual / Flexible (Available across all counties)")
 
-            for _, r in group.iterrows():
-                loc = ", ".join([
-                r["Address"],
-                r["City"],
-                r["State"],
-                r["Zip Code"]
-                ]).strip(", ")
-
-                if loc:
-                    locations.add(loc)
-
-                    locations = sorted(locations)
-                else:
-                    st.success("Virtual / Flexible (Available across all counties)")
+            if resource["Counties"]:
+                st.caption("Counties: " + ", ".join(resource["Counties"]))
 
             phones = [p for p in resource["Phones"] if p.strip()]
             if phones:
@@ -204,4 +201,4 @@ else:
                 for e in emails:
                     st.markdown(e)
 
-                st.divider()
+            st.divider()
