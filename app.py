@@ -182,7 +182,7 @@ else:
             if resource["Locations"]:
                 st.markdown("#### Location(s)")
                 for loc in resource["Locations"]:
-                    st.markdown(f"📍 {loc}")
+                    st.markdown(f"{loc}")
             else:
                 st.success("Virtual / Flexible (Available across all counties)")
 
