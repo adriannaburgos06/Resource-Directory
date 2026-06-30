@@ -182,14 +182,16 @@ else:
             else:
                 st.success("Virtual / Flexible (Available across all counties)")
 
-            if resource["Phones"]:
+            phones = [p for p in resource["Phones"] if p.strip()]
+            if phones:
                 st.markdown("#### Phone")
-                for p in resource["Phones"]:
+                for p in phones:
                     st.markdown(p)
 
-            if resource["Emails"]:
+            emails = [e for e in resource["Emails"] if e.strip()]
+            if emails:
                 st.markdown("#### Email")
-                for e in resource["Emails"]:
+                for e in emails:
                     st.markdown(e)
 
-            st.divider()
+                st.divider()
