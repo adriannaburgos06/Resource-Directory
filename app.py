@@ -176,7 +176,7 @@ else:
                 st.markdown(f"• {s}")
 
             if resource["Locations"]:
-                st.markdown("#### Locations")
+                st.markdown("#### Location(s)")
                 for loc in resource["Locations"]:
                     st.markdown(f"{loc}")
             else:
